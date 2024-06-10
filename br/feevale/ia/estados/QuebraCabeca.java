@@ -1,22 +1,19 @@
 package br.feevale.ia.estados;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 
 import static br.feevale.ia.estados.Posicoes.BAIXO;
 import static br.feevale.ia.estados.Posicoes.CIMA;
 import static br.feevale.ia.estados.Posicoes.DIREITA;
 import static br.feevale.ia.estados.Posicoes.ESQUERDA;
+import static java.util.Comparator.comparing;
 
 public class QuebraCabeca {
 
     private final String entrada;
     private final String objetivo;
-    private final Queue<Estado> proximos = new LinkedList<>();
-    private Set<Estado> estadosAtuais = new HashSet<>();
+    private final List<Estado> estadosAtuais = new ArrayList<>();
+
 
     public QuebraCabeca(String entrada, String objetivo) {
         this.entrada = entrada;
@@ -40,7 +37,7 @@ public class QuebraCabeca {
         estadosAtuais.add(new Estado(quadrado, vazio));
     }
 
-    public String[][] montarPosibilidade(int linha, int coluna, Estado estado) {
+    public static String[][] montarPosibilidade(int linha, int coluna, Estado estado) {
         String[][] posibilidade = new String[3][3];
         for (int linha2 = 0; linha2 < 3; linha2++) {
             System.arraycopy(estado.getQuadrado()[linha2], 0, posibilidade[linha2], 0, 3);
@@ -55,7 +52,7 @@ public class QuebraCabeca {
         return posibilidade;
     }
 
-    public String mostrarQuadrado(Estado estado) {
+    public static String mostrarQuadrado(Estado estado) {
         StringBuilder montador = new StringBuilder();
         for (int linha = 0; linha < 3; linha++) {
             for (int coluna = 0; coluna < 3; coluna++) {
@@ -132,5 +129,52 @@ public class QuebraCabeca {
             }
         }
         return encontrado;
+    }
+
+
+    public List<Estado> buscaPorMelhor() throws Exception {
+        iniciar();
+        List<Estado> fechados = new ArrayList<>();
+        List<Estado> caminho = new ArrayList<>();
+        List<Estado> abertos = new ArrayList<>(estadosAtuais);
+        do {
+            Estado melhorEstado = abertos.getFirst();
+            String quadradoMontado = mostrarQuadrado(melhorEstado);
+            if (objetivo.equals(quadradoMontado)) {
+                System.out.println("ACHOU");
+                return caminho;
+            } else {
+                caminho.add(melhorEstado);
+                List<Estado> proximosEstados = proximosEstados(melhorEstado);
+                for (Estado estado: proximosEstados) {
+                    if (!abertos.contains(estado) || !fechados.contains(estado)) {
+                        estado.calcularValorHeuristico(objetivo);
+                        abertos.add(estado);
+                    } else if (abertos.contains(estado)) {
+                        caminho = reordenarCaminho(caminho, estado);
+                    } else if(fechados.contains(estado)) {
+                        if (caminho.contains(estado)) {
+                            fechados.remove(estado);
+                            abertos.add(estado);
+                        }
+                    }
+                }
+                fechados.add(melhorEstado);
+                abertos.removeAll(fechados);
+                reordenarAbertosPorHeuristica(abertos);
+            }
+
+        } while (!abertos.isEmpty());
+
+        throw new Exception();
+    }
+
+    private void reordenarAbertosPorHeuristica(List<Estado> abertos) {
+        abertos.sort(comparing(Estado::getValor).reversed());
+    }
+
+    private List<Estado> reordenarCaminho(List<Estado> caminho, Estado estado) {
+        int ultimaPosicao = caminho.indexOf(estado);
+        return caminho.subList(0, ultimaPosicao);
     }
 }
