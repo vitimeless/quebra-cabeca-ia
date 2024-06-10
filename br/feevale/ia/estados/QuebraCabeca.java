@@ -65,35 +65,41 @@ public class QuebraCabeca {
         return montador.toString();
     }
 
-    public List<Estado> proximosEstados(Set<Estado> estados) {
+    public List<Estado> proximosEstados(List<Estado> estados) {
         List<Estado> estados2 = new LinkedList<>();
-        for (Estado estado : estados) {
-            int colunaAtual = estado.getVazio().getColuna();
-            int linhaAtual = estado.getVazio().getLinha();
-
-            int linhaAcima = CIMA.calcular(linhaAtual);
-            int linhaAbaixo = BAIXO.calcular(linhaAtual);
-            int colunaParaDireita = DIREITA.calcular(colunaAtual);
-            int colunaParaEsquerda = ESQUERDA.calcular(colunaAtual);
-
-            if (CIMA.valido(linhaAcima)) {
-                String[][] possibilidade = montarPosibilidade(linhaAcima, colunaAtual, estado);
-                estados2.add(new Estado(possibilidade, new Vazio(linhaAcima, colunaAtual)));
-            }
-            if (BAIXO.valido(linhaAbaixo)) {
-                String[][] possibilidade = montarPosibilidade(linhaAbaixo, colunaAtual, estado);
-                estados2.add(new Estado(possibilidade, new Vazio(linhaAbaixo, colunaAtual)));
-            }
-            if (ESQUERDA.valido(colunaParaEsquerda)) {
-                String[][] possibilidade = montarPosibilidade(linhaAtual, colunaParaEsquerda, estado);
-                estados2.add(new Estado(possibilidade, new Vazio(linhaAtual, colunaParaEsquerda)));
-            }
-            if (DIREITA.valido(colunaParaDireita)) {
-                String[][] possibilidade = montarPosibilidade(linhaAtual, colunaParaDireita, estado);
-                estados2.add(new Estado(possibilidade, new Vazio(linhaAtual, colunaParaDireita)));
-            }
-        }
+        for (Estado estado : estados)
+            estados2.addAll(proximosEstados(estado));
         return estados2;
+    }
+
+    public List<Estado> proximosEstados(Estado estado) {
+        int colunaAtual = estado.getVazio().getColuna();
+        int linhaAtual = estado.getVazio().getLinha();
+
+        int linhaAcima = CIMA.calcular(linhaAtual);
+        int linhaAbaixo = BAIXO.calcular(linhaAtual);
+        int colunaParaDireita = DIREITA.calcular(colunaAtual);
+        int colunaParaEsquerda = ESQUERDA.calcular(colunaAtual);
+
+        List<Estado> proximosEstados = new ArrayList<>();
+
+        if (CIMA.valido(linhaAcima)) {
+            String[][] possibilidade = montarPosibilidade(linhaAcima, colunaAtual, estado);
+            proximosEstados.add(new Estado(possibilidade, new Vazio(linhaAcima, colunaAtual)));
+        }
+        if (BAIXO.valido(linhaAbaixo)) {
+            String[][] possibilidade = montarPosibilidade(linhaAbaixo, colunaAtual, estado);
+            proximosEstados.add(new Estado(possibilidade, new Vazio(linhaAbaixo, colunaAtual)));
+        }
+        if (ESQUERDA.valido(colunaParaEsquerda)) {
+            String[][] possibilidade = montarPosibilidade(linhaAtual, colunaParaEsquerda, estado);
+            proximosEstados.add(new Estado(possibilidade, new Vazio(linhaAtual, colunaParaEsquerda)));
+        }
+        if (DIREITA.valido(colunaParaDireita)) {
+            String[][] possibilidade = montarPosibilidade(linhaAtual, colunaParaDireita, estado);
+            proximosEstados.add(new Estado(possibilidade, new Vazio(linhaAtual, colunaParaDireita)));
+        }
+        return proximosEstados;
     }
 
     public void porLargura() {
